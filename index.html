@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recetario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   TOKENS  ·  tomados del sistema Kitchen Hearth
+   ============================================================ */
+:root{
+  --background:#131313;
+  --surface:#131313;
+  --sc-lowest:#0e0e0e;
+  --sc-low:#1c1b1b;
+  --sc:#20201f;
+  --sc-high:#2a2a2a;
+  --sc-highest:#353535;
+  --surface-bright:#393939;
+
+  --on-surface:#e5e2e1;
+  --on-surface-variant:#c4c6cd;
+  --outline:#8e9197;
+  --ov-70:rgba(67,71,76,.7);
+  --ov-50:rgba(67,71,76,.5);
+  --ov-30:rgba(67,71,76,.3);
+
+  --primary:#b5c8df;
+  --on-primary:#203243;
+  --primary-container:#2c3e50;
+  --on-primary-container:#96a9be;
+
+  --secondary:#96ccff;
+  --on-secondary:#003353;
+  --secondary-container:#025483;
+  --on-secondary-container:#8ec8fe;
+
+  --tertiary:#e3c19b;
+  --on-tertiary:#412c11;
+  --tertiary-container:#4e381c;
+  --on-tertiary-container:#c1a17d;
+
+  --error:#ffb4ab;
+  --error-container:#93000a;
+  --on-error-container:#ffdad6;
+
+  --r:2px; --r-lg:4px; --r-xl:8px; --r-full:12px;
+  --unit:8px; --gutter:32px; --margin-mobile:24px; --margin-desktop:64px; --container:1440px;
+
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --sans:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SF Mono',Consolas,monospace;
+
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  --shadow-md:0 6px 18px rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--background);color:var(--on-surface);
+  font:400 16px/24px var(--sans);
+  min-height:100vh;display:flex;flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer;background:none;border:0}
+input,textarea{font-family:inherit;font-size:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--secondary);outline-offset:2px}
+.ic{flex:0 0 auto;display:block}
+
+/* ---------- escala tipográfica ---------- */
+.t-display{font:700 56px/64px var(--serif);letter-spacing:-.01em;margin:0}
+.t-headline{font:600 32px/40px var(--serif);margin:0}
+.t-headline-sm{font:600 24px/32px var(--serif);margin:0}
+.t-body-lg{font:400 18px/28px var(--sans)}
+.t-body{font:400 16px/24px var(--sans)}
+.t-label{font:600 14px/20px var(--mono);letter-spacing:.05em}
+.t-label-sm{font:500 12px/16px var(--mono);letter-spacing:.03em}
+.up{text-transform:uppercase}
+.muted{color:var(--on-surface-variant)}
+
+/* ============================================================
+   ESTRUCTURA
+   ============================================================ */
+.shell{display:flex;flex:1;width:100%}
+
+.sidenav{
+  position:fixed;left:0;top:0;height:100vh;width:256px;z-index:50;
+  background:var(--sc);border-right:1px solid var(--ov-50);
+  padding:var(--gutter);display:flex;flex-direction:column;
+}
+.brand{font:700 26px/32px var(--serif);color:var(--primary);margin:0 0 4px}
+.brand-sub{color:var(--on-surface-variant);margin:0 0 var(--margin-desktop)}
+.navlist{flex:1;display:flex;flex-direction:column;gap:2px;overflow-y:auto;margin:0 -8px}
+.navitem{
+  display:flex;align-items:center;gap:var(--unit);width:100%;text-align:left;
+  padding:12px 16px;border-radius:var(--r-lg);color:var(--on-surface-variant);
+  font:600 14px/20px var(--mono);letter-spacing:.05em;transition:background .15s,color .15s;
+}
+.navitem:hover{background:var(--sc-high);color:var(--on-surface)}
+.navitem[aria-current="true"]{background:var(--primary-container);color:var(--on-primary-container)}
+.navsection{
+  font:500 12px/16px var(--mono);letter-spacing:.03em;text-transform:uppercase;
+  color:var(--outline);padding:24px 16px 8px;
+}
+.navfoot{margin-top:auto;padding-top:var(--gutter);border-top:1px solid var(--ov-50);
+  display:flex;flex-direction:column;gap:2px;margin-left:-8px;margin-right:-8px}
+
+.topbar{
+  display:none;position:sticky;top:0;z-index:50;height:80px;align-items:center;
+  justify-content:space-between;gap:12px;padding:0 var(--margin-mobile);
+  background:var(--surface);border-bottom:1px solid var(--ov-50);
+}
+.topbar .brand{font-size:22px;line-height:28px;margin:0}
+
+main{flex:1;margin-left:256px;width:100%;min-width:0}
+.canvas{max-width:var(--container);margin:0 auto;padding:var(--margin-desktop)}
+
+@media(max-width:880px){
+  .sidenav{display:none}
+  main{margin-left:0}
+  .topbar{display:flex}
+  .canvas{padding:var(--margin-mobile)}
+  .t-display{font-size:36px;line-height:44px;letter-spacing:0}
+  .t-headline{font-size:26px;line-height:34px}
+}
+
+/* ============================================================
+   BOTONES
+   ============================================================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--unit);
+  padding:10px 24px;border-radius:var(--r-lg);
+  font:600 14px/20px var(--mono);letter-spacing:.05em;
+  transition:background .15s,color .15s,transform .15s,box-shadow .15s;
+}
+.btn-primary{background:var(--secondary);color:var(--on-secondary);box-shadow:var(--shadow-sm)}
+.btn-primary:hover{background:#a9d5ff;transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-outline{border:1px solid var(--ov-70);color:var(--on-surface-variant)}
+.btn-outline:hover{background:var(--sc-high);color:var(--on-surface)}
+.btn-danger{border:1px solid var(--error-container);color:var(--error)}
+.btn-danger:hover{background:var(--error-container);color:var(--on-error-container)}
+.btn-sm{padding:7px 16px;font-size:12px;letter-spacing:.03em}
+.btn-block{width:100%;height:56px}
+.iconbtn{
+  width:48px;height:48px;border-radius:var(--r-full);
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--sc-high);color:var(--on-surface-variant);transition:background .15s,color .15s;
+}
+.iconbtn:hover{background:var(--surface-bright);color:var(--on-surface)}
+.iconbtn.accent{background:var(--secondary);color:var(--on-secondary)}
+.iconbtn.accent:hover{background:#a9d5ff}
+.iconbtn.sm{width:36px;height:36px}
+.linkbtn{color:var(--on-surface-variant);font:500 12px/16px var(--mono);letter-spacing:.03em;
+  display:inline-flex;align-items:center;gap:6px}
+.linkbtn:hover{color:var(--secondary)}
+
+/* ============================================================
+   TARJETAS DE RECETA
+   ============================================================ */
+.toolbar{display:flex;gap:var(--unit);align-items:center;flex-wrap:wrap;margin-bottom:var(--gutter)}
+.searchbox{
+  flex:1;min-width:220px;display:flex;align-items:center;gap:12px;
+  background:var(--sc-low);border:1px solid var(--ov-50);border-radius:var(--r-lg);
+  padding:0 16px;height:48px;color:var(--outline);
+}
+.searchbox input{flex:1;background:none;border:0;outline:0;height:100%;color:var(--on-surface);min-width:0}
+.searchbox input::placeholder{color:var(--outline)}
+.searchbox:focus-within{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+
+.chips{display:flex;gap:var(--unit);flex-wrap:wrap;margin-bottom:var(--gutter)}
+.chip{
+  padding:8px 16px;border-radius:var(--r-full);border:1px solid var(--ov-70);
+  color:var(--on-surface-variant);font:500 12px/16px var(--mono);letter-spacing:.03em;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.chip:hover{background:var(--sc-high);color:var(--on-surface)}
+.chip[aria-pressed="true"]{background:var(--primary-container);border-color:var(--primary-container);color:var(--on-primary-container)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--gutter)}
+.card{
+  background:var(--sc-low);border:1px solid var(--ov-50);border-radius:var(--r-xl);
+  overflow:hidden;text-align:left;display:flex;flex-direction:column;
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--ov-70)}
+.card-img{position:relative;aspect-ratio:4/3;overflow:hidden;background:var(--sc-high)}
+.card-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}
+.card:hover .card-img img{transform:scale(1.07)}
+.card-img .ph{width:100%;height:100%;display:grid;place-items:center;color:var(--outline)}
+.card-fav{
+  position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:var(--r-full);
+  background:rgba(19,19,19,.75);color:var(--tertiary);display:grid;place-items:center;
+}
+.card-body{padding:var(--gutter) 24px 24px}
+.card-body h3{margin:0 0 12px}
+.card-meta{display:flex;gap:16px;flex-wrap:wrap;color:var(--on-surface-variant);align-items:center}
+.card-meta span{display:inline-flex;align-items:center;gap:6px}
+.pill{
+  display:inline-flex;margin-top:16px;padding:4px 12px;border-radius:var(--r-full);
+  background:var(--tertiary-container);color:var(--on-tertiary-container);
+  font:500 12px/16px var(--mono);letter-spacing:.03em;text-transform:uppercase;
+}
+
+/* ============================================================
+   DETALLE
+   ============================================================ */
+.detail-grid{display:grid;grid-template-columns:1fr;gap:var(--margin-desktop)}
+@media(min-width:1100px){.detail-grid{grid-template-columns:minmax(0,2fr) minmax(300px,1fr)}}
+.col-main{display:flex;flex-direction:column;gap:var(--margin-desktop);min-width:0}
+.col-side{display:flex;flex-direction:column;gap:var(--gutter)}
+@media(min-width:1100px){.col-side{position:sticky;top:var(--gutter);align-self:start}}
+
+.hero{
+  position:relative;width:100%;height:384px;border-radius:var(--r-xl);
+  overflow:hidden;margin-bottom:var(--gutter);box-shadow:var(--shadow-sm);background:var(--sc-high);
+}
+.hero img{width:100%;height:100%;object-fit:cover;transition:transform .7s;display:block}
+.hero:hover img{transform:scale(1.04)}
+.hero .scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent 55%)}
+.hero .ph{width:100%;height:100%;display:grid;place-content:center;justify-items:center;gap:12px;color:var(--outline)}
+.hero-fav{
+  position:absolute;top:16px;right:16px;width:48px;height:48px;border-radius:var(--r-full);
+  background:rgba(19,19,19,.8);color:var(--primary);
+  display:grid;place-items:center;box-shadow:var(--shadow-sm);
+}
+.hero-fav.on{color:var(--tertiary)}
+@media(max-width:880px){.hero{height:256px}}
+
+.factline{
+  display:flex;flex-wrap:wrap;gap:var(--gutter);align-items:center;
+  color:var(--on-surface-variant);padding-bottom:var(--gutter);
+  border-bottom:1px solid var(--ov-30);
+}
+.factline div{display:flex;align-items:center;gap:var(--unit)}
+.desc{max-width:66ch;color:var(--on-surface-variant);margin:var(--gutter) 0 0}
+
+.panel{
+  background:var(--sc-low);border:1px solid var(--ov-50);border-radius:var(--r-xl);
+  padding:var(--margin-desktop);box-shadow:var(--shadow-sm);
+}
+@media(max-width:880px){.panel{padding:var(--gutter)}}
+.panel-head{
+  display:flex;justify-content:space-between;align-items:center;gap:var(--gutter);
+  margin-bottom:var(--gutter);flex-wrap:wrap;
+}
+.scaler{
+  display:flex;align-items:center;background:var(--sc-high);border-radius:var(--r-lg);
+  padding:8px;border:1px solid var(--ov-70);transition:border-color .15s,box-shadow .15s;
+}
+.scaler:focus-within{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+.scaler label{color:var(--on-surface-variant);margin-right:12px;padding-left:8px;
+  text-transform:uppercase;letter-spacing:.08em}
+.scaler-btn{
+  width:32px;height:32px;display:grid;place-items:center;border-radius:var(--r);
+  color:var(--on-surface-variant);transition:color .15s,background .15s;
+}
+.scaler-btn:hover{color:var(--secondary);background:var(--surface-bright)}
+.scaler input{
+  width:56px;text-align:center;background:none;border:0;outline:0;margin:0 8px;
+  font:600 24px/32px var(--serif);color:var(--on-surface);-moz-appearance:textfield;appearance:textfield;
+}
+.scaler input::-webkit-outer-spin-button,.scaler input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+.factor{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--r-full);
+  font:600 14px/20px var(--mono);letter-spacing:.05em;
+  background:var(--sc-high);color:var(--on-surface-variant);
+}
+.factor.on{background:var(--tertiary-container);color:var(--on-tertiary-container)}
+
+.inglist{list-style:none;margin:0;padding:0}
+.inglist li{
+  display:flex;align-items:baseline;gap:16px;
+  padding-bottom:24px;margin-bottom:24px;border-bottom:1px solid var(--ov-30);
+}
+.inglist li:last-child{border-bottom:0;padding-bottom:0;margin-bottom:0}
+.amt{
+  width:112px;flex:0 0 auto;color:var(--primary);
+  font:600 14px/20px var(--mono);letter-spacing:.05em;transition:color .3s;
+}
+.amt.scaled{color:var(--tertiary)}
+.amt.flash{color:var(--secondary)}
+.ingname{flex:1;font:400 18px/28px var(--sans);min-width:0}
+.ingnote{display:block;color:var(--outline);font:500 12px/16px var(--mono);letter-spacing:.03em;margin-top:4px}
+
+.steplist{display:flex;flex-direction:column;gap:var(--gutter)}
+.step{display:flex;gap:var(--gutter)}
+.stepnum{
+  flex:0 0 auto;width:48px;height:48px;border-radius:var(--r-full);
+  background:var(--sc-high);border:1px solid var(--ov-50);
+  display:grid;place-items:center;font:600 24px/32px var(--serif);color:var(--on-surface);
+}
+.step h4{margin:0 0 8px;font:600 14px/20px var(--mono);letter-spacing:.05em;
+  text-transform:uppercase;color:var(--on-surface)}
+.step p{margin:0;font:400 18px/28px var(--sans);color:var(--on-surface-variant)}
+@media(max-width:880px){.step{gap:16px}.stepnum{width:40px;height:40px;font-size:20px}}
+
+.timerchip{
+  display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:6px 14px;
+  border-radius:var(--r-full);border:1px solid var(--ov-70);
+  color:var(--on-surface-variant);font:600 14px/20px var(--mono);letter-spacing:.05em;
+}
+.timerchip.running{border-color:var(--secondary);color:var(--secondary);background:var(--secondary-container)}
+
+.cta{background:var(--sc);border:1px solid var(--ov-50);border-radius:var(--r-xl);
+  padding:var(--gutter);box-shadow:var(--shadow-sm)}
+.cta h3{margin:0 0 var(--unit)}
+.cta p{margin:0 0 var(--gutter);color:var(--on-surface-variant)}
+.bento{display:grid;grid-template-columns:1fr 1fr;gap:var(--unit)}
+.bento div{border-radius:var(--r-lg);overflow:hidden;cursor:zoom-in;height:128px}
+.bento div:first-child{grid-column:span 2;height:160px}
+.bento img{width:100%;height:100%;object-fit:cover;transition:transform .5s;display:block}
+.bento div:hover img{transform:scale(1.1)}
+
+/* ============================================================
+   FORMULARIOS
+   ============================================================ */
+.field{margin-bottom:var(--gutter)}
+.field > label{
+  display:block;margin-bottom:var(--unit);color:var(--on-surface-variant);
+  font:500 12px/16px var(--mono);letter-spacing:.08em;text-transform:uppercase;
+}
+.inp{
+  width:100%;background:var(--sc-high);border:1px solid var(--ov-50);border-radius:var(--r-lg);
+  padding:12px 16px;outline:0;transition:border-color .15s,box-shadow .15s;
+}
+.inp:focus{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+textarea.inp{resize:vertical;min-height:112px;font:400 18px/28px var(--sans)}
+.hint{color:var(--outline);font:500 12px/18px var(--mono);letter-spacing:.03em;margin:var(--unit) 0 0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:880px){.grid3{grid-template-columns:1fr}}
+
+.editrow{display:grid;grid-template-columns:90px 110px 1fr 44px;gap:var(--unit);
+  margin-bottom:var(--unit);align-items:center}
+.editrow .inp{padding:10px 12px}
+.editrow .inp:first-child{font-family:var(--mono);text-align:right}
+.editstep{display:grid;grid-template-columns:1fr 44px;gap:var(--unit);margin-bottom:16px;align-items:start}
+.editstep textarea.inp{min-height:80px}
+.xbtn{
+  width:44px;height:44px;border-radius:var(--r-lg);border:1px solid var(--ov-50);
+  color:var(--outline);display:grid;place-items:center;transition:all .15s;
+}
+.xbtn:hover{background:var(--error-container);border-color:var(--error-container);color:var(--on-error-container)}
+@media(max-width:880px){.editrow{grid-template-columns:72px 88px 1fr 44px;gap:6px}}
+
+.thumbs{display:flex;gap:var(--unit);flex-wrap:wrap;margin-top:16px}
+.thumb{position:relative;width:120px;height:120px;border-radius:var(--r-lg);
+  overflow:hidden;border:1px solid var(--ov-50)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{
+  position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:var(--r);
+  background:rgba(19,19,19,.85);color:var(--on-surface);display:grid;place-items:center;
+}
+.thumb button:hover{background:var(--error-container);color:var(--on-error-container)}
+
+.sectionhead{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  margin:var(--margin-desktop) 0 var(--gutter);flex-wrap:wrap}
+
+.capgrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--gutter);align-items:start}
+@media(max-width:1000px){.capgrid{grid-template-columns:1fr}}
+.mic{
+  width:100%;border:1px solid var(--ov-70);border-radius:var(--r-xl);background:var(--sc-high);
+  padding:var(--margin-desktop) var(--gutter);display:flex;flex-direction:column;
+  align-items:center;gap:16px;color:var(--on-surface-variant);transition:all .2s;
+}
+.mic:hover{border-color:var(--secondary);color:var(--secondary)}
+.mic.rec{background:var(--secondary-container);border-color:var(--secondary);color:var(--on-secondary-container)}
+.micring{
+  width:72px;height:72px;border-radius:var(--r-full);background:var(--sc);
+  display:grid;place-items:center;border:1px solid var(--ov-70);
+}
+.mic.rec .micring{background:var(--secondary);color:var(--on-secondary);
+  border-color:var(--secondary);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(150,204,255,.5)}50%{box-shadow:0 0 0 14px rgba(150,204,255,0)}}
+textarea.freetext{min-height:340px}
+.note{
+  border-left:2px solid var(--tertiary);padding:4px 0 4px 16px;margin:0 0 var(--gutter);
+  color:var(--on-tertiary-container);font:500 12px/18px var(--mono);letter-spacing:.03em;
+}
+
+.empty{
+  background:var(--sc-low);border:1px solid var(--ov-50);border-radius:var(--r-xl);
+  padding:var(--margin-desktop) var(--gutter);text-align:center;
+}
+.empty h2{margin:0 0 var(--unit)}
+.empty p{max-width:48ch;margin:0 auto var(--gutter);color:var(--on-surface-variant)}
+.empty-actions{display:flex;gap:var(--unit);justify-content:center;flex-wrap:wrap}
+
+/* ============================================================
+   MODO COCINA
+   ============================================================ */
+.cook{position:fixed;inset:0;z-index:70;background:var(--background);overflow-y:auto}
+.cookbar{
+  position:sticky;top:0;z-index:5;height:80px;display:flex;align-items:center;gap:16px;
+  padding:0 var(--margin-desktop);background:var(--surface);border-bottom:1px solid var(--ov-50);
+}
+@media(max-width:880px){.cookbar{padding:0 var(--margin-mobile);height:72px}}
+.cookbar h2{flex:1;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.cookbody{max-width:880px;margin:0 auto;padding:var(--margin-desktop) var(--margin-mobile) 120px}
+.cookbody h3{
+  margin:var(--margin-desktop) 0 var(--gutter);color:var(--outline);
+  font:500 12px/16px var(--mono);letter-spacing:.08em;text-transform:uppercase;
+}
+.cookbody h3:first-child{margin-top:0}
+.chk{
+  display:flex;gap:16px;align-items:flex-start;width:100%;text-align:left;
+  padding:16px 0;border-bottom:1px solid var(--ov-30);
+}
+.chk .box{
+  flex:0 0 auto;width:28px;height:28px;border-radius:var(--r);border:1.5px solid var(--outline);
+  display:grid;place-items:center;color:transparent;margin-top:2px;transition:all .15s;
+}
+.chk[aria-pressed="true"] .box{background:var(--secondary);border-color:var(--secondary);color:var(--on-secondary)}
+.chk[aria-pressed="true"] .ctext{opacity:.4;text-decoration:line-through}
+.ctext{font:400 22px/32px var(--sans)}
+.chk .amt{width:124px;font-size:16px}
+.cook-ing{display:flex;gap:16px;align-items:baseline;flex:1;flex-wrap:wrap;min-width:0}
+@media(max-width:880px){.ctext{font-size:19px;line-height:28px}.chk .amt{width:100%}}
+
+/* ============================================================
+   VARIOS
+   ============================================================ */
+.lightbox{position:fixed;inset:0;z-index:90;background:rgba(14,14,14,.94);
+  display:grid;place-items:center;padding:var(--gutter);cursor:zoom-out}
+.lightbox img{max-width:100%;max-height:100%;border-radius:var(--r-xl)}
+.toast{
+  position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:95;
+  background:var(--sc-highest);color:var(--on-surface);border:1px solid var(--ov-70);
+  padding:14px 24px;border-radius:var(--r-lg);box-shadow:var(--shadow-md);
+  font:500 14px/20px var(--sans);
+}
+.storagenote{
+  margin-top:var(--margin-desktop);padding-top:var(--gutter);border-top:1px solid var(--ov-30);
+  color:var(--outline);font:500 12px/18px var(--mono);letter-spacing:.03em;
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="brand">Recetario</span>
+  <div style="display:flex;gap:8px">
+    <button class="iconbtn" data-go="capture" aria-label="Dictar receta" id="mtop-mic"></button>
+    <button class="iconbtn accent" data-go="new" aria-label="Nueva receta" id="mtop-add"></button>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="sidenav">
+    <div>
+      <p class="brand">Recetario</p>
+      <p class="brand-sub t-label-sm up">Mi cocina</p>
+    </div>
+    <div class="navlist" id="nav"></div>
+    <div class="navfoot">
+      <button class="btn btn-primary btn-block" data-go="capture" style="margin:0 8px 16px" id="side-dictar"></button>
+      <button class="navitem" data-go="new" id="side-new"></button>
+      <button class="navitem" data-export="1" id="side-exp"></button>
+      <button class="navitem" data-import="1" id="side-imp"></button>
+    </div>
+  </nav>
+
+  <main><div class="canvas" id="view"></div></main>
+</div>
+
+<script>
+/* ============================================================
+   ICONOS  ·  trazo de 24px, en la línea de Material Symbols
+   ============================================================ */
+const ICONS = {
+  book:'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z',
+  heart:'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8l1.1 1L12 21.2l7.7-7.7 1.1-1a5.5 5.5 0 0 0 0-7.9z',
+  plus:'M12 5v14M5 12h14',
+  minus:'M5 12h14',
+  mic:'M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3',
+  edit:'M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z',
+  pot:'M4 9h16M5 9v7a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V9M2 12h3M19 12h3M8 6V4M12 6V3M16 6V4',
+  clock:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6.5V12l3.5 2',
+  close:'M18 6 6 18M6 6l12 12',
+  search:'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.35-4.35',
+  download:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3',
+  upload:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12',
+  trash:'M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6',
+  check:'M20 6 9 17l-5-5',
+  image:'M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6M8.5 9.5a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4z',
+  back:'M19 12H5M12 19l-7-7 7-7',
+  users:'M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.85M16.5 3.3a4 4 0 0 1 0 7.4',
+  tag:'M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01',
+  sliders:'M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6'
+};
+const ic = (n, s=24, fill=false) =>
+  `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="${fill?'currentColor':'none'}"
+     stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+     aria-hidden="true"><path d="${ICONS[n]}"/></svg>`;
+
+/* ============================================================
+   ALMACENAMIENTO
+   Almacén persistente si existe; si no, localStorage.
+   Exportar JSON es el puente hacia una base de datos real.
+   ============================================================ */
+const BRIDGE = !!(window.storage && typeof window.storage.get === 'function');
+const KEY = 'recetario:v1';
+const DB = {
+  async get(k){
+    if (BRIDGE){ try{ const r = await window.storage.get(k,false); return r ? JSON.parse(r.value) : null; }catch(e){ return null; } }
+    try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; }catch(e){ return null; }
+  },
+  async set(k,v){
+    if (BRIDGE){ try{ await window.storage.set(k, JSON.stringify(v), false); return true; }catch(e){ return false; } }
+    try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; }
+  },
+  async del(k){
+    if (BRIDGE){ try{ await window.storage.delete(k,false); }catch(e){} return; }
+    try{ localStorage.removeItem(k); }catch(e){}
+  }
+};
+
+/* ============================================================
+   ESTADO
+   ============================================================ */
+const S = { view:'list', recipes:[], photos:{}, currentId:null, portions:null,
+  q:'', tag:'', favOnly:false, draft:null, parsed:null, cookDone:{}, timers:{}, listening:false };
+
+const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ============================================================
+   DISPONIBILIDAD DEL DICTADO
+   Ojo: file:// cuenta como contexto seguro para el navegador,
+   así que isSecureContext no alcanza. Hay que mirar el protocolo.
+   ============================================================ */
+const UA = navigator.userAgent;
+const IS_IOS = /iPad|iPhone|iPod/.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_IOS_OTHER = IS_IOS && /CriOS|FxiOS|EdgiOS|OPiOS/.test(UA);
+const IN_FRAME = (() => { try { return window.self !== window.top; } catch(e){ return true; } })();
+const SR_API = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function browserName(){
+  if (IS_IOS_OTHER) return 'Chrome/Firefox/Edge en iOS';
+  if (IS_IOS) return 'Safari en iOS';
+  if (/Android/.test(UA)) return /Chrome\//.test(UA) ? 'Chrome en Android' : 'navegador de Android';
+  if (/Edg\//.test(UA)) return 'Edge';
+  if (/Chrome\//.test(UA)) return 'Chrome';
+  if (/Firefox\//.test(UA)) return 'Firefox';
+  if (/Safari\//.test(UA)) return 'Safari';
+  return 'navegador desconocido';
+}
+
+/** ¿El marco que nos contiene habilita el micrófono? true / false / null si no se puede saber. */
+function frameAllowsMic(){
+  if (!IN_FRAME) return true;
+  try{
+    if (document.featurePolicy && document.featurePolicy.allowsFeature)
+      return document.featurePolicy.allowsFeature('microphone');
+  }catch(e){}
+  return null;   // Safari no expone la consulta: dentro de un marco ajeno, asumimos bloqueado
+}
+
+function micStatus(){
+  if (location.protocol === 'file:') return { ok:false, why:'file' };
+  if (!window.isSecureContext) return { ok:false, why:'http' };
+  if (IS_IOS_OTHER) return { ok:false, why:'ios-otro' };
+  if (!SR_API) return { ok:false, why:'sin-api' };
+  if (IN_FRAME && frameAllowsMic() !== true) return { ok:false, why:'iframe' };
+  return { ok:true };
+}
+
+const MIC_MSG = {
+  'file':'La página está abierta como archivo del disco (file://). Con ese origen el navegador niega el micrófono siempre, sin preguntar, aunque Safari esté configurado para pedir permiso. Hay que publicarla en una dirección https:// para que el dictado funcione.',
+  'http':'La página está servida por http:// común. El micrófono solo se habilita en https:// o en http://localhost.',
+  'iframe':'La página está incrustada dentro de otra que no le cede el micrófono. Los marcos de origen cruzado lo bloquean por defecto, aunque la conexión sea segura. Abrila en una pestaña propia y el dictado se habilita.',
+  'ios-otro':'En iPhone y iPad solo Safari puede dictar. Apple no habilita el reconocimiento de voz en Chrome, Firefox ni Edge, porque todos usan WebKit por debajo. Abrí esta página en Safari.',
+  'sin-api':'Este navegador no incluye reconocimiento de voz. Funciona en Chrome y Edge de escritorio, Chrome en Android y Safari en iPhone.'
+};
+
+/** Ficha de diagnóstico: los datos crudos, para no adivinar. */
+function micDiagHTML(){
+  const st = micStatus();
+  const allow = frameAllowsMic();
+  const row = (k, v, bad) =>
+    `<div style="display:flex;justify-content:space-between;gap:16px;padding:6px 0;border-bottom:1px solid var(--ov-30)">
+      <span style="color:var(--outline)">${k}</span>
+      <span style="color:var(--${bad?'tertiary':'on-surface-variant'});text-align:right">${esc(v)}</span></div>`;
+  return `
+    <div style="margin-top:var(--gutter);padding-top:var(--gutter);border-top:1px solid var(--ov-30)">
+      <p class="t-label-sm up" style="margin:0 0 12px;color:var(--outline)">Diagnóstico del micrófono</p>
+      <div class="t-label-sm">
+        ${row('Origen', location.protocol + '//' + (location.hostname || 'archivo local'),
+              location.protocol !== 'https:' && location.hostname !== 'localhost')}
+        ${row('Navegador', browserName(), IS_IOS_OTHER)}
+        ${row('API de voz', SR_API ? 'disponible' : 'ausente', !SR_API)}
+        ${row('Micrófono en el marco', !IN_FRAME ? 'sin marco'
+              : allow === true ? 'cedido' : allow === false ? 'bloqueado' : 'no cedido', IN_FRAME && allow !== true)}
+        ${row('Resultado', st.ok ? 'debería funcionar' : 'bloqueado: ' + st.why, !st.ok)}
+      </div>
+      ${st.why === 'iframe' ? `<button class="btn btn-outline btn-sm" id="openTab" style="margin-top:16px">
+        ${ic('upload',16)} Abrir en pestaña propia</button>` : ''}
+    </div>`;
+}
+
+/* ============================================================
+   UNIDADES, NÚMEROS Y ESCALADO
+   ============================================================ */
+const UNIT_MAP = {};
+[
+  ['g',['g','gr','grs','gramo','gramos']],
+  ['kg',['kg','kilo','kilos','kilogramo','kilogramos']],
+  ['ml',['ml','cc','mililitro','mililitros']],
+  ['l',['l','lt','litro','litros']],
+  ['taza',['taza','tazas']],
+  ['cda',['cda','cdas','cucharada','cucharadas','cuchara','cucharas']],
+  ['cdta',['cdta','cdtas','cucharadita','cucharaditas']],
+  ['pizca',['pizca','pizcas']],
+  ['diente',['diente','dientes']],
+  ['unidad',['unidad','unidades','u']],
+  ['lata',['lata','latas']],
+  ['paquete',['paquete','paquetes','paq']],
+  ['puñado',['puñado','puñados','punado']],
+  ['hoja',['hoja','hojas']],
+  ['rama',['rama','ramas']],
+  ['sobre',['sobre','sobres']],
+  ['vaso',['vaso','vasos']],
+  ['rodaja',['rodaja','rodajas','feta','fetas']]
+].forEach(([canon,alts]) => alts.forEach(a => UNIT_MAP[a] = canon));
+
+const PLURAL = {taza:'tazas',cda:'cdas',cdta:'cdtas',diente:'dientes',unidad:'unidades',
+  lata:'latas',paquete:'paquetes','puñado':'puñados',hoja:'hojas',rama:'ramas',
+  sobre:'sobres',vaso:'vasos',rodaja:'rodajas',pizca:'pizcas'};
+const unitLabel = (u,n) => (!u ? '' : (n != null && n > 1.001 && PLURAL[u]) ? PLURAL[u] : u);
+
+const WORD_NUM = {media:.5,medio:.5,un:1,una:1,uno:1,dos:2,tres:3,cuatro:4,cinco:5,
+  seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,docena:12};
+const GLYPH = {'½':.5,'¼':.25,'¾':.75,'⅓':1/3,'⅔':2/3,'⅛':.125};
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+function takeQty(text){
+  const t = text.trim();
+  let m = t.match(/^(\d+)\s+(\d)\s*\/\s*(\d)/);
+  if (m) return {qty:+m[1] + (+m[2]/+m[3]), rest:t.slice(m[0].length).trim()};
+  m = t.match(/^(\d+)\s*\/\s*(\d+)/);
+  if (m) return {qty:+m[1]/+m[2], rest:t.slice(m[0].length).trim()};
+  m = t.match(/^(\d+)\s*([½¼¾⅓⅔⅛])/);
+  if (m) return {qty:+m[1]+GLYPH[m[2]], rest:t.slice(m[0].length).trim()};
+  m = t.match(/^([½¼¾⅓⅔⅛])/);
+  if (m) return {qty:GLYPH[m[1]], rest:t.slice(m[0].length).trim()};
+  m = t.match(/^(\d+(?:[.,]\d+)?)/);
+  if (m) return {qty:parseFloat(m[1].replace(',','.')), rest:t.slice(m[0].length).trim()};
+  m = t.match(/^([a-záéíóúñ]+)\b/i);
+  if (m && WORD_NUM[norm(m[1])] != null) return {qty:WORD_NUM[norm(m[1])], rest:t.slice(m[0].length).trim()};
+  return {qty:null, rest:t};
+}
+
+function takeUnit(text){
+  const m = text.match(/^([a-záéíóúñ]+)\.?\b/i);
+  if (!m) return {unit:'', rest:text};
+  const u = UNIT_MAP[norm(m[1])];
+  if (!u) return {unit:'', rest:text};
+  return {unit:u, rest:text.slice(m[0].length).trim().replace(/^de\s+/i,'')};
+}
+
+const numStr = n => {
+  const r = Math.round(n*100)/100;
+  return (Number.isInteger(r) ? String(r) : String(r).replace('.',',')).replace(/,00?$/,'');
+};
+
+function toFraction(n){
+  const whole = Math.floor(n + 1e-9), frac = n - whole;
+  for (const [v,g] of [[.125,'⅛'],[.25,'¼'],[1/3,'⅓'],[.5,'½'],[2/3,'⅔'],[.75,'¾']])
+    if (Math.abs(frac - v) < .045) return (whole ? whole + ' ' : '') + g;
+  if (frac < .045) return String(whole);
+  if (frac > .955) return String(whole + 1);
+  return numStr(n);
+}
+
+function fmtQty(n, unit){
+  if (n == null) return '';
+  if (unit === 'g' || unit === 'ml'){
+    if (n >= 200) n = Math.round(n/10)*10;
+    else if (n >= 50) n = Math.round(n/5)*5;
+    else n = Math.round(n*10)/10;
+    return numStr(n);
+  }
+  if (unit === 'kg' || unit === 'l') return numStr(Math.round(n*1000)/1000);
+  return toFraction(n);
+}
+
+const scaled = (r, portions) => {
+  const f = (portions || r.portions) / (r.portions || 1);
+  return { factor:f, list:r.ingredients.map(i => ({...i, qty: i.qty == null ? null : i.qty * f})) };
+};
+
+/* ============================================================
+   PARSER DE TEXTO LIBRE
+   ============================================================ */
+const VERBS = ['mezclar','mezcla','batir','bate','agregar','agrega','añadir','anadir','cocinar','cocina',
+'hornear','hornea','calentar','calienta','poner','pone','pon','colocar','coloca','cortar','corta','picar','pica',
+'pelar','pela','hervir','hierve','freir','frei','fríe','saltear','saltea','servir','sirve','dejar','deja',
+'retirar','retira','incorporar','incorpora','verter','vierte','precalentar','precalienta','salpimentar','revolver',
+'revuelve','amasar','amasa','estirar','estira','reservar','reserva','llevar','lleva','sacar','saca',
+'tapar','tapa','dorar','dora','condimentar','condimenta','formar','forma','rellenar','rellena','decorar','decora',
+'enfriar','enfria','refrigerar','desmoldar','licuar','licua','procesar','procesa','triturar','escurrir','escurre',
+'colar','cola','empanar','empana','rebozar','reboza','montar','monta','unir','une','sumar','suma','sofreir','sofrie',
+'pisar','pisa','machacar','machaca','aplastar','aplasta','moler','muele','rallar','ralla','exprimir','exprime',
+'remojar','remoja','hidratar','hidrata','salar','sala','espolvorear','espolvorea','pincelar','pincela',
+'untar','unta','gratinar','gratina','marinar','marina','adobar','adoba','blanquear','apagar','apaga',
+'batí','agregá','mezclá','cortá','poné','dejá','cociná','sumá','llevá','retirá','dorá','pisá','serví'];
+
+function isMetaLine(l){
+  const n = norm(l);
+  if (/^(para|rinde|rendimiento|sirve|salen?)\s+\d+\s*(personas?|porciones?|comensales?|unidades?)/.test(n)) return true;
+  if (/^(tiempo|dificultad|rendimiento|porciones)\s*:/.test(n)) return true;
+  const bare = n.replace(/\d+/g,'')
+    .replace(/\b(para|personas?|porciones?|comensales?|unidades?|minutos?|min|horas?|hs?|y|de|tiempo|total|aprox|aproximadamente|coccion|preparacion|rinde|sirve)\b/g,'')
+    .replace(/[,.:;·\-–—()]/g,'').trim();
+  return bare === '' && /\d/.test(n);
+}
+const isIngHeader  = l => /^\s*(ingredientes?|para\s+(la|el|los|las)\s+.{0,28})\s*:?\s*$/i.test(l);
+const isStepHeader = l => /^\s*(preparaci[oó]n|pasos?|procedimiento|elaboraci[oó]n|instrucciones|c[oó]mo\s+se\s+hace|receta)\s*:?\s*$/i.test(l);
+
+/** Etiqueta corta del paso, a partir de su verbo inicial. */
+function stepLabel(text){
+  const w = (text.trim().split(/\s+/)[0] || '').replace(/[.,;:]/g,'');
+  return VERBS.includes(norm(w)) ? w.toUpperCase() : '';
+}
+
+function parseRecipe(text){
+  const lines = text.split(/\r?\n|(?<=[.;])\s{2,}/).map(l => l.trim()).filter(Boolean);
+  const out = { title:'', portions:null, prep:null, tag:'', ingredients:[], steps:[] };
+  let mode = null, titleTaken = false;
+
+  let m = text.match(/(?:para|rinde|rendimiento|sirve|salen?)\s*(\d+)\s*(?:personas?|porciones?|comensales?|unidades?)/i)
+       || text.match(/(\d+)\s*(?:porciones|comensales)/i);
+  if (m) out.portions = Math.min(50, +m[1]);
+  m = text.match(/(\d+)\s*(?:min|minutos?)\b/i);
+  if (m) out.prep = +m[1];
+  else { m = text.match(/(\d+)\s*(?:h|horas?)\b/i); if (m) out.prep = +m[1]*60; }
+
+  for (const raw of lines){
+    if (isIngHeader(raw)){ mode = 'ing'; continue; }
+    if (isStepHeader(raw)){ mode = 'step'; continue; }
+
+    const numbered = /^\s*\d+\s*[.)]\s+/.test(raw);
+    const line = raw.replace(/^\s*(?:\d+\s*[.)-]|[-•*·—])\s*/,'').trim();
+    if (!line) continue;
+    if (mode !== 'step' && isMetaLine(line)) continue;
+
+    if (!titleTaken && mode === null){
+      const looksIng = takeQty(line).qty != null;
+      const fw0 = norm(line.split(/\s+/)[0] || '');
+      if (!looksIng && !VERBS.includes(fw0) && !numbered && line.length < 70){
+        out.title = line.replace(/[:.]$/,'')
+          .replace(/[,·\-–—]?\s*(?:para|rinde|rendimiento|sirve|salen?)\s+\d+\s*(?:personas?|porciones?|comensales?|unidades?)?\s*$/i,'')
+          .replace(/[,·\-–—]?\s*\d+\s*(?:porciones|comensales|minutos?|min|horas?)\s*$/i,'')
+          .trim() || line;
+        titleTaken = true; continue;
+      }
+    }
+
+    const fw = norm(line.split(/\s+/)[0] || '');
+    const looksStep = numbered || VERBS.includes(fw) || line.length > 68 || /[,.;].*[,.;]/.test(line);
+    const looksIng  = takeQty(line).qty != null;
+
+    let bucket = mode;
+    if (!bucket) bucket = (looksIng && !looksStep) ? 'ing' : (looksStep ? 'step' : 'ing');
+    else if (bucket === 'ing' && looksStep && !looksIng) bucket = mode = 'step';
+
+    if (bucket === 'ing'){
+      const a = takeQty(line), b = takeUnit(a.rest);
+      let name = b.rest || a.rest || line, note = '';
+      const nm = name.match(/[(,]\s*(a\s+gusto|al\s+gusto|opcional|c\/n|cantidad\s+necesaria)[)]?/i);
+      if (nm){ note = nm[1]; name = name.replace(nm[0],'').trim().replace(/[,(]\s*$/,''); }
+      if (!name) continue;
+      out.ingredients.push({ id:uid(), qty:a.qty, unit:b.unit, name:name.replace(/[.;]$/,''), note });
+    } else {
+      const t = line.replace(/\s+/g,' ');
+      out.steps.push({ id:uid(), title:stepLabel(t), text:t });
+    }
+  }
+  if (!out.title) out.title = 'Receta sin título';
+  if (!out.portions) out.portions = 4;
+  return out;
+}
+
+function stepMinutes(t){
+  let m = t.match(/(\d+)\s*(?:min|minutos?)\b/i);
+  if (m) return +m[1];
+  m = t.match(/(\d+)\s*(?:h|horas?)\b/i);
+  return m ? +m[1]*60 : null;
+}
+
+/* ============================================================
+   FOTOS
+   ============================================================ */
+function shrink(file, max=1280, q=.72){
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const s = Math.min(1, max/Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width*s); c.height = Math.round(img.height*s);
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+        res(c.toDataURL('image/jpeg', q));
+      };
+      img.onerror = () => rej(new Error('imagen'));
+      img.src = fr.result;
+    };
+    fr.onerror = () => rej(new Error('archivo'));
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ============================================================
+   PERSISTENCIA
+   ============================================================ */
+async function loadAll(){
+  S.recipes = (await DB.get(KEY)) || [];
+  S.recipes.sort((a,b) => (b.updated||0) - (a.updated||0));
+}
+const saveAll = () => DB.set(KEY, S.recipes);
+async function loadPhotos(id){
+  if (S.photos[id]) return S.photos[id];
+  S.photos[id] = (await DB.get('fotos:'+id)) || [];
+  return S.photos[id];
+}
+const savePhotos = id => DB.set('fotos:'+id, S.photos[id] || []);
+
+/* ============================================================
+   VISTAS
+   ============================================================ */
+const V = document.getElementById('view');
+
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const d = document.createElement('div');
+  d.className = 'toast'; d.textContent = msg; d.setAttribute('role','status');
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 2800);
+}
+
+const allTags = () => [...new Set(S.recipes.map(r => r.tag).filter(Boolean))].sort();
+
+function filtered(){
+  const q = norm(S.q);
+  return S.recipes.filter(r => {
+    if (S.favOnly && !r.fav) return false;
+    if (S.tag && r.tag !== S.tag) return false;
+    if (!q) return true;
+    return norm([r.title, r.tag, r.desc, ...r.ingredients.map(i => i.name)].join(' ')).includes(q);
+  });
+}
+
+function renderNav(){
+  const tags = allTags();
+  document.getElementById('nav').innerHTML = `
+    <button class="navitem" data-tag="" aria-current="${!S.tag && !S.favOnly && S.view==='list'}">
+      ${ic('book',20)} Todas las recetas</button>
+    <button class="navitem" data-fav="1" aria-current="${S.favOnly}">
+      ${ic('heart',20)} Favoritas</button>
+    ${tags.length ? '<div class="navsection">Categorías</div>' +
+      tags.map(t => `<button class="navitem" data-tag="${esc(t)}" aria-current="${S.tag===t}">
+        ${ic('tag',20)} ${esc(t)}</button>`).join('') : ''}`;
+
+  document.getElementById('side-dictar').innerHTML = ic('mic',20) + ' Dictar receta';
+  document.getElementById('side-new').innerHTML    = ic('plus',20) + ' Nueva receta';
+  document.getElementById('side-exp').innerHTML    = ic('download',20) + ' Exportar JSON';
+  document.getElementById('side-imp').innerHTML    = ic('upload',20) + ' Importar';
+  document.getElementById('mtop-mic').innerHTML    = ic('mic',22);
+  document.getElementById('mtop-add').innerHTML    = ic('plus',22);
+}
+
+/* ---------- lista ---------- */
+function viewList(){
+  const rs = filtered();
+  if (!S.recipes.length){
+    V.innerHTML = `
+      <div class="empty">
+        <h2 class="t-headline">Todavía no hay recetas</h2>
+        <p class="t-body-lg">Contala en voz alta mientras cocinás, o pegala tal como la tenés escrita.
+          El recetario separa solo los ingredientes de los pasos.</p>
+        <div class="empty-actions">
+          <button class="btn btn-primary" data-go="capture">${ic('mic',20)} Dictar o pegar</button>
+          <button class="btn btn-outline" data-go="new">${ic('edit',20)} Cargar a mano</button>
+          <button class="btn btn-outline" data-demo="1">Ver un ejemplo</button>
+        </div>
+      </div>${storageNote()}`;
+    return;
+  }
+
+  V.innerHTML = `
+    <div class="sectionhead" style="margin-top:0">
+      <h1 class="t-display">Mis recetas</h1>
+      <span class="t-label muted">${S.recipes.length} guardada${S.recipes.length===1?'':'s'}</span>
+    </div>
+    <div class="toolbar">
+      <div class="searchbox">${ic('search',20)}
+        <input id="q" placeholder="Buscar por nombre o ingrediente…" value="${esc(S.q)}" aria-label="Buscar">
+      </div>
+    </div>
+    <div class="chips">
+      <button class="chip" data-tag="" aria-pressed="${!S.tag && !S.favOnly}">Todas</button>
+      <button class="chip" data-fav="1" aria-pressed="${S.favOnly}">${ic('heart',14)} Favoritas</button>
+      ${allTags().map(t => `<button class="chip" data-tag="${esc(t)}" aria-pressed="${S.tag===t}">${esc(t)}</button>`).join('')}
+    </div>
+    <div id="results">${resultsHTML(rs)}</div>
+    ${storageNote()}`;
+  hydrateCards(rs);
+}
+
+const resultsHTML = rs => rs.length
+  ? `<div class="grid">${rs.map(cardHTML).join('')}</div>`
+  : `<div class="empty"><h2 class="t-headline-sm">Sin resultados</h2>
+     <p>Probá con otro ingrediente o quitá los filtros.</p>
+     <div class="empty-actions"><button class="btn btn-outline" data-clear="1">Quitar filtros</button></div></div>`;
+
+const favBadge = r => r.fav ? `<span class="card-fav">${ic('heart',18,true)}</span>` : '';
+
+function cardHTML(r){
+  return `<button class="card" data-open="${r.id}">
+    <div class="card-img" data-imgslot="${r.id}">
+      <div class="ph">${ic('image',32)}</div>${favBadge(r)}
+    </div>
+    <div class="card-body">
+      <h3 class="t-headline-sm">${esc(r.title)}</h3>
+      <div class="card-meta t-label-sm">
+        ${r.prep ? `<span>${ic('clock',16)} ${r.prep} min</span>` : ''}
+        <span>${ic('users',16)} ${r.portions}</span>
+      </div>
+      ${r.tag ? `<span class="pill">${esc(r.tag)}</span>` : ''}
+    </div>
+  </button>`;
+}
+
+function hydrateCards(rs){
+  rs.forEach(r => loadPhotos(r.id).then(ps => {
+    if (!ps.length) return;
+    const slot = document.querySelector(`[data-imgslot="${r.id}"]`);
+    if (slot) slot.innerHTML = `<img src="${ps[0]}" alt="">` + favBadge(r);
+  }));
+}
+
+const storageNote = () => `<p class="storagenote">Datos guardados ${BRIDGE
+  ? 'en el almacenamiento persistente de esta vista previa'
+  : 'en este navegador (localStorage)'} · exportá a JSON para respaldar o migrar a una base de datos.</p>`;
+
+/* ---------- detalle ---------- */
+function viewDetail(){
+  const r = S.recipes.find(x => x.id === S.currentId);
+  if (!r) return go('list');
+  const p = S.portions || r.portions;
+  const { factor, list } = scaled(r, p);
+  const on = Math.abs(factor - 1) > .001;
+
+  V.innerHTML = `
+    <div class="toolbar" style="margin-bottom:24px">
+      <button class="linkbtn" data-go="list">${ic('back',16)} Todas las recetas</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-outline btn-sm" data-edit="${r.id}">${ic('edit',16)} Editar</button>
+    </div>
+
+    <div class="detail-grid">
+      <div class="col-main">
+        <section>
+          <div class="hero" id="hero">
+            <div class="ph">${ic('image',40)}<span class="t-label-sm up">Sin foto</span></div>
+            <button class="hero-fav ${r.fav?'on':''}" data-fav-toggle="${r.id}"
+              aria-label="${r.fav?'Quitar de favoritas':'Marcar como favorita'}">${ic('heart',24,r.fav)}</button>
+          </div>
+          <h1 class="t-display" style="margin-bottom:var(--gutter)">${esc(r.title)}</h1>
+          <div class="factline t-label">
+            ${r.prep ? `<div>${ic('clock',20)} ${r.prep} min</div>` : ''}
+            <div>${ic('users',20)} Base: ${r.portions} porciones</div>
+            ${r.tag ? `<div>${ic('tag',20)} ${esc(r.tag)}</div>` : ''}
+          </div>
+          ${r.desc ? `<p class="desc t-body-lg">${esc(r.desc)}</p>` : ''}
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2 class="t-headline">Ingredientes</h2>
+            <div class="scaler">
+              <label class="t-label-sm" for="servings">Porciones</label>
+              <button class="scaler-btn" data-pstep="-1" aria-label="Una porción menos">${ic('minus',18)}</button>
+              <input id="servings" type="number" min="1" max="99" value="${p}" aria-label="Cantidad de porciones">
+              <button class="scaler-btn" data-pstep="1" aria-label="Una porción más">${ic('plus',18)}</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;margin-bottom:var(--gutter);flex-wrap:wrap" id="factorrow">
+            <span class="factor ${on?'on':''}" id="factor">${ic('sliders',16)} × ${numStr(factor)}</span>
+            ${on ? `<button class="linkbtn" data-preset="${r.portions}">Volver a la receta original</button>` : ''}
+          </div>
+          <ul class="inglist" id="inglist">${list.map(i => `
+            <li>
+              <span class="amt ${on && i.qty!=null ? 'scaled':''}">${esc(fmtQty(i.qty,i.unit))} ${esc(unitLabel(i.unit,i.qty))}</span>
+              <span class="ingname">${esc(i.name)}${i.note ? `<span class="ingnote">${esc(i.note)}</span>` : ''}</span>
+            </li>`).join('')}
+          </ul>
+        </section>
+
+        <section>
+          <h2 class="t-headline" style="margin-bottom:var(--gutter)">Preparación</h2>
+          <div class="steplist">${r.steps.map((s,n) => {
+            const mins = stepMinutes(s.text);
+            return `<div class="step">
+              <div class="stepnum">${n+1}</div>
+              <div>
+                ${s.title ? `<h4>${esc(s.title)}</h4>` : ''}
+                <p>${esc(s.text)}</p>
+                ${mins ? `<span class="timerchip">${ic('clock',16)} ${mins} min</span>` : ''}
+              </div>
+            </div>`;
+          }).join('')}</div>
+        </section>
+      </div>
+
+      <div class="col-side">
+        <div class="cta">
+          <h3 class="t-headline-sm">¿Listo para cocinar?</h3>
+          <p class="t-body">Entrá al modo cocina para seguir los pasos sin distracciones, con temporizadores.</p>
+          <button class="btn btn-primary btn-block" data-cook="${r.id}">${ic('pot',20)} Iniciar modo cocina</button>
+        </div>
+        <div id="gallery"></div>
+      </div>
+    </div>`;
+
+  loadPhotos(r.id).then(ps => {
+    const hero = document.getElementById('hero');
+    if (ps.length && hero){
+      hero.insertAdjacentHTML('afterbegin', `<img src="${ps[0]}" alt="${esc(r.title)}"><div class="scrim"></div>`);
+      const ph = hero.querySelector('.ph'); if (ph) ph.remove();
+    }
+    const rest = ps.slice(1), g = document.getElementById('gallery');
+    if (rest.length && g) g.innerHTML =
+      `<h3 class="t-label up" style="margin:0 0 var(--unit);color:var(--on-surface)">Galería del proceso</h3>
+       <div class="bento">${rest.map((src,i) => `<div data-zoom="${i+1}"><img src="${src}" alt="Foto ${i+2}"></div>`).join('')}</div>`;
+  });
+}
+
+/** Actualiza cantidades sin volver a dibujar la vista. */
+function applyPortions(n){
+  const r = S.recipes.find(x => x.id === S.currentId);
+  S.portions = Math.max(1, Math.min(99, n));
+  const { factor, list } = scaled(r, S.portions);
+  const on = Math.abs(factor - 1) > .001;
+
+  const inp = document.getElementById('servings');
+  if (inp && +inp.value !== S.portions) inp.value = S.portions;
+
+  const f = document.getElementById('factor');
+  f.innerHTML = ic('sliders',16) + ' × ' + numStr(factor);
+  f.classList.toggle('on', on);
+
+  document.querySelectorAll('#inglist .amt').forEach((el,i) => {
+    const ing = list[i]; if (!ing) return;
+    el.textContent = fmtQty(ing.qty, ing.unit) + ' ' + unitLabel(ing.unit, ing.qty);
+    el.classList.toggle('scaled', on && ing.qty != null);
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 300);
+  });
+
+  const reset = document.querySelector('[data-preset]');
+  if (on && !reset) f.insertAdjacentHTML('afterend',
+    `<button class="linkbtn" data-preset="${r.portions}">Volver a la receta original</button>`);
+  else if (!on && reset) reset.remove();
+}
+
+/* ---------- captura ---------- */
+function viewCapture(){
+  const mic = micStatus();
+  V.innerHTML = `
+    <button class="linkbtn" data-go="list">${ic('back',16)} Todas las recetas</button>
+    <div class="sectionhead" style="margin-top:24px">
+      <h1 class="t-display">Contala y la ordeno</h1>
+    </div>
+    <div class="capgrid">
+      <div class="panel">
+        <h2 class="t-label up muted" style="margin:0 0 var(--gutter)">1 · Dictado</h2>
+        ${mic.ok ? `<button class="mic" id="mic">
+            <span class="micring">${ic('mic',30)}</span>
+            <span class="t-label up">Empezar a dictar</span>
+          </button>
+          <p class="hint">${IS_IOS
+            ? 'En iPhone, Safari corta la escucha en cada pausa. El botón se vuelve a encender solo: hablá de a frases y esperá a ver el texto aparecer.'
+            : 'Hablá seguido: nombre, para cuántos, ingredientes con cantidades y después los pasos. Lo dictado se va agregando al recuadro de al lado.'}</p>`
+        : `<p class="note">${MIC_MSG[mic.why]}</p>
+           <p class="hint">Mientras tanto, escribí o pegá la receta en el recuadro de al lado: el resultado es el mismo.</p>`}
+        ${micDiagHTML()}
+      </div>
+      <div class="panel">
+        <h2 class="t-label up muted" style="margin:0 0 var(--gutter)">2 · Texto de la receta</h2>
+        <textarea class="inp freetext" id="free" placeholder="Milanesas a la napolitana
+Para 4 personas, 40 minutos
+
+Ingredientes
+750 g de nalga en milanesas
+3 huevos
+200 g de pan rallado
+2 dientes de ajo
+sal y pimienta a gusto
+
+Preparación
+Batir los huevos con el ajo picado, sal y pimienta.
+Pasar cada milanesa por el huevo y después por el pan rallado.
+Freír 3 minutos de cada lado hasta que estén doradas."></textarea>
+        <div style="display:flex;gap:var(--unit);margin-top:var(--gutter);flex-wrap:wrap">
+          <button class="btn btn-primary" id="parse">${ic('check',20)} Ordenar receta</button>
+          <button class="btn btn-outline" id="clearfree">Borrar</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ---------- editor ---------- */
+function viewEdit(){
+  const d = S.draft;
+  const existing = S.recipes.some(r => r.id === d.id);
+  const ings = d.ingredients.length ? d.ingredients : [{id:uid(),qty:null,unit:'',name:''}];
+  const stps = d.steps.length ? d.steps : [{id:uid(),title:'',text:''}];
+
+  V.innerHTML = `
+    <div class="toolbar" style="margin-bottom:24px">
+      <button class="linkbtn" data-go="${existing?'back':'list'}">${ic('back',16)} Salir sin guardar</button>
+      <span style="flex:1"></span>
+      ${existing ? `<button class="btn btn-danger btn-sm" data-del="${d.id}">${ic('trash',16)} Eliminar</button>` : ''}
+      <button class="btn btn-primary btn-sm" data-save="1">${ic('check',16)} Guardar receta</button>
+    </div>
+
+    <h1 class="t-display" style="margin-bottom:var(--gutter)">${existing ? 'Editar receta' : 'Nueva receta'}</h1>
+    ${S.parsed ? `<p class="note">Ordené el texto en ${d.ingredients.length} ingredientes y ${d.steps.length} pasos.
+      Revisá las cantidades y las porciones base: de eso depende que el escalado funcione.</p>` : ''}
+
+    <div class="panel">
+      <div class="field">
+        <label for="f-title">Nombre de la receta</label>
+        <input class="inp" id="f-title" value="${esc(d.title)}" placeholder="Milanesas a la napolitana">
+      </div>
+      <div class="grid3">
+        <div class="field">
+          <label for="f-port">Porciones base</label>
+          <input class="inp" id="f-port" type="number" min="1" max="99" value="${d.portions||4}">
+          <p class="hint">Para cuántos rinde tal como está escrita.</p>
+        </div>
+        <div class="field">
+          <label for="f-prep">Tiempo (min)</label>
+          <input class="inp" id="f-prep" type="number" min="0" value="${d.prep||''}">
+        </div>
+        <div class="field">
+          <label for="f-tag">Categoría</label>
+          <input class="inp" id="f-tag" value="${esc(d.tag||'')}" placeholder="postre, principal…" list="taglist">
+          <datalist id="taglist">${allTags().map(t => `<option value="${esc(t)}">`).join('')}</datalist>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label for="f-desc">Notas</label>
+        <textarea class="inp" id="f-desc" placeholder="De quién la sacaste, qué le cambiarías…">${esc(d.desc||'')}</textarea>
+      </div>
+    </div>
+
+    <div class="sectionhead"><h2 class="t-headline">Ingredientes</h2></div>
+    <div class="editrow" style="margin-bottom:12px">
+      <span class="t-label-sm up muted" style="text-align:right">Cant.</span>
+      <span class="t-label-sm up muted">Unidad</span>
+      <span class="t-label-sm up muted">Ingrediente</span><span></span>
+    </div>
+    <div id="ings">${ings.map(rowIng).join('')}</div>
+    <button class="btn btn-outline btn-sm" id="addIng" style="margin-top:12px">${ic('plus',16)} Ingrediente</button>
+    <p class="hint">Dejá la cantidad vacía para lo que va “a gusto”: eso no se escala.</p>
+
+    <div class="sectionhead"><h2 class="t-headline">Pasos</h2></div>
+    <div id="stps">${stps.map(rowStep).join('')}</div>
+    <button class="btn btn-outline btn-sm" id="addStep" style="margin-top:12px">${ic('plus',16)} Paso</button>
+
+    <div class="sectionhead"><h2 class="t-headline">Fotos</h2></div>
+    <input type="file" id="pics" accept="image/*" multiple hidden>
+    <button class="btn btn-outline btn-sm" id="addPic">${ic('image',16)} Agregar fotos</button>
+    <p class="hint">La primera foto se usa como portada. Se reducen a 1280px antes de guardarse.</p>
+    <div class="thumbs" id="thumbs"></div>
+
+    <div style="margin-top:var(--margin-desktop)">
+      <button class="btn btn-primary" data-save="1">${ic('check',20)} Guardar receta</button>
+    </div>
+    <datalist id="unitlist">
+      <option value="g"><option value="kg"><option value="ml"><option value="l">
+      <option value="taza"><option value="cda"><option value="cdta"><option value="unidad">
+      <option value="diente"><option value="pizca"><option value="rodaja">
+    </datalist>`;
+  renderThumbs();
+}
+
+const rowIng = i => `
+  <div class="editrow" data-ing="${i.id}">
+    <input class="inp" value="${i.qty==null?'':esc(numStr(i.qty))}" placeholder="—" data-k="qty" inputmode="decimal" aria-label="Cantidad">
+    <input class="inp" value="${esc(i.unit||'')}" placeholder="g" data-k="unit" list="unitlist" aria-label="Unidad">
+    <input class="inp" value="${esc(i.name||'')}" placeholder="harina 0000" data-k="name" aria-label="Ingrediente">
+    <button class="xbtn" data-rmi="${i.id}" aria-label="Quitar ingrediente">${ic('close',18)}</button>
+  </div>`;
+
+const rowStep = s => `
+  <div class="editstep" data-step="${s.id}">
+    <div>
+      <input class="inp" value="${esc(s.title||'')}" data-k="stitle" placeholder="Título corto del paso (opcional)"
+        aria-label="Título del paso"
+        style="margin-bottom:8px;font-family:var(--mono);font-size:13px;letter-spacing:.05em;text-transform:uppercase">
+      <textarea class="inp" data-k="stext" aria-label="Texto del paso" placeholder="Batir los huevos con el ajo picado…">${esc(s.text||'')}</textarea>
+    </div>
+    <button class="xbtn" data-rms="${s.id}" aria-label="Quitar paso">${ic('close',18)}</button>
+  </div>`;
+
+function renderThumbs(){
+  const box = document.getElementById('thumbs');
+  if (!box) return;
+  box.innerHTML = (S.photos[S.draft.id]||[]).map((src,i) =>
+    `<div class="thumb"><img src="${src}" alt="Foto ${i+1}">
+      <button data-rmp="${i}" aria-label="Quitar foto">${ic('close',14)}</button></div>`).join('');
+}
+
+function collectDraft(){
+  const d = S.draft;
+  d.title = (document.getElementById('f-title').value||'').trim() || 'Receta sin título';
+  d.portions = Math.max(1, +document.getElementById('f-port').value || 4);
+  d.prep = +document.getElementById('f-prep').value || null;
+  d.tag = (document.getElementById('f-tag').value||'').trim();
+  d.desc = (document.getElementById('f-desc').value||'').trim();
+
+  d.ingredients = [...document.querySelectorAll('[data-ing]')].map(el => {
+    const g = k => el.querySelector(`[data-k="${k}"]`).value.trim();
+    const name = g('name'); if (!name) return null;
+    const raw = g('qty').replace(',','.');
+    return { id:el.dataset.ing, qty: raw==='' ? null : (parseFloat(raw)||null),
+             unit: UNIT_MAP[norm(g('unit'))] || g('unit'), name, note:'' };
+  }).filter(Boolean);
+
+  d.steps = [...document.querySelectorAll('[data-step]')].map(el => ({
+    id: el.dataset.step,
+    title: el.querySelector('[data-k="stitle"]').value.trim(),
+    text:  el.querySelector('[data-k="stext"]').value.trim()
+  })).filter(s => s.text);
+
+  d.updated = Date.now();
+  return d;
+}
+
+async function saveDraft(){
+  const d = collectDraft();
+  if (!d.ingredients.length && !d.steps.length){ toast('Agregá al menos un ingrediente o un paso'); return; }
+  const i = S.recipes.findIndex(r => r.id === d.id);
+  if (i >= 0) S.recipes[i] = d; else S.recipes.unshift(d);
+  await saveAll(); await savePhotos(d.id);
+  S.parsed = null; S.currentId = d.id; S.portions = d.portions;
+  toast('Receta guardada'); go('detail');
+}
+
+/* ---------- modo cocina ---------- */
+function viewCook(){
+  const r = S.recipes.find(x => x.id === S.currentId);
+  const p = S.portions || r.portions;
+  const { factor, list } = scaled(r, p);
+  const on = Math.abs(factor - 1) > .001;
+
+  const el = document.createElement('div');
+  el.className = 'cook'; el.id = 'cookLayer';
+  el.innerHTML = `
+    <div class="cookbar">
+      <h2 class="t-headline-sm">${esc(r.title)}</h2>
+      <span class="factor ${on?'on':''}">${ic('users',16)} ${p}</span>
+      <button class="iconbtn sm" data-closecook="1" aria-label="Salir del modo cocina">${ic('close',20)}</button>
+    </div>
+    <div class="cookbody">
+      <h3>Ingredientes</h3>
+      ${list.map(i => `<button class="chk" data-chk="i${i.id}" aria-pressed="${!!S.cookDone['i'+i.id]}">
+        <span class="box">${ic('check',18)}</span>
+        <span class="cook-ing">
+          <span class="amt ${on && i.qty!=null?'scaled':''}">${esc(fmtQty(i.qty,i.unit))} ${esc(unitLabel(i.unit,i.qty))}</span>
+          <span class="ctext">${esc(i.name)}</span>
+        </span></button>`).join('')}
+      <h3>Preparación</h3>
+      ${r.steps.map(s => {
+        const m = stepMinutes(s.text);
+        return `<button class="chk" data-chk="s${s.id}" aria-pressed="${!!S.cookDone['s'+s.id]}">
+          <span class="box">${ic('check',18)}</span>
+          <span><span class="ctext">${esc(s.text)}</span>
+          ${m ? `<span class="timerchip" data-timer="${s.id}" data-min="${m}">${ic('clock',16)} ${m} min · tocar para iniciar</span>` : ''}
+          </span></button>`;
+      }).join('')}
+    </div>`;
+  document.body.appendChild(el);
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCook(){
+  const el = document.getElementById('cookLayer');
+  if (el) el.remove();
+  document.body.style.overflow = '';
+  Object.values(S.timers).forEach(t => clearInterval(t.iv));
+  S.timers = {};
+}
+
+function beep(){
+  try{
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    [0,.28,.56].forEach(dl => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.frequency.value = 880; o.connect(g); g.connect(ac.destination);
+      g.gain.setValueAtTime(.001, ac.currentTime+dl);
+      g.gain.exponentialRampToValueAtTime(.22, ac.currentTime+dl+.02);
+      g.gain.exponentialRampToValueAtTime(.001, ac.currentTime+dl+.2);
+      o.start(ac.currentTime+dl); o.stop(ac.currentTime+dl+.22);
+    });
+  }catch(e){}
+}
+
+function startTimer(chip){
+  const id = chip.dataset.timer;
+  if (S.timers[id]){
+    clearInterval(S.timers[id].iv); delete S.timers[id];
+    chip.classList.remove('running');
+    chip.innerHTML = ic('clock',16) + ` ${chip.dataset.min} min · tocar para iniciar`;
+    return;
+  }
+  let left = +chip.dataset.min * 60;
+  chip.classList.add('running');
+  const tick = () => {
+    const mm = String(Math.floor(left/60)).padStart(2,'0'), ss = String(left%60).padStart(2,'0');
+    chip.innerHTML = ic('clock',16) + ` ${mm}:${ss}`;
+    if (left-- <= 0){ clearInterval(S.timers[id].iv); delete S.timers[id];
+      chip.innerHTML = ic('check',16) + ' ¡Listo!'; beep(); }
+  };
+  tick();
+  S.timers[id] = { iv:setInterval(tick,1000) };
+}
+
+/* ============================================================
+   NAVEGACIÓN
+   ============================================================ */
+function go(v){
+  S.view = v;
+  if (v==='list') viewList();
+  else if (v==='detail') viewDetail();
+  else if (v==='edit') viewEdit();
+  else if (v==='capture') viewCapture();
+  renderNav();
+  window.scrollTo(0,0);
+}
+
+function newDraft(base){
+  S.draft = Object.assign({ id:uid(), title:'', portions:4, prep:null, tag:'', desc:'',
+    ingredients:[], steps:[], fav:false, created:Date.now(), updated:Date.now() }, base||{});
+  if (!S.photos[S.draft.id]) S.photos[S.draft.id] = [];
+}
+
+/* ============================================================
+   EVENTOS
+   ============================================================ */
+document.addEventListener('click', async e => {
+  if (e.target.closest('.lightbox')){ document.querySelector('.lightbox').remove(); return; }
+
+  const t = e.target.closest('[data-go],[data-open],[data-edit],[data-cook],[data-fav-toggle],[data-tag],[data-fav],[data-clear],[data-pstep],[data-preset],[data-rmi],[data-rms],[data-rmp],[data-del],[data-chk],[data-timer],[data-closecook],[data-zoom],[data-export],[data-import],[data-demo],[data-save]');
+  if (!t) return;
+  const d = t.dataset;
+
+  if (d.timer !== undefined){ e.stopPropagation(); return startTimer(t); }
+
+  if (d.go){
+    if (d.go === 'new'){ newDraft(); S.parsed = null; return go('edit'); }
+    if (d.go === 'back') return go('detail');
+    return go(d.go);
+  }
+  if (d.open){ S.currentId = d.open; S.portions = null; return go('detail'); }
+  if (d.edit){
+    const r = S.recipes.find(x => x.id === d.edit);
+    S.draft = JSON.parse(JSON.stringify(r)); S.parsed = null;
+    await loadPhotos(r.id); return go('edit');
+  }
+  if (d.cook){ S.currentId = d.cook; S.cookDone = {}; return viewCook(); }
+  if (d.closecook) return closeCook();
+  if (d.save) return saveDraft();
+
+  if (d.favToggle){
+    const r = S.recipes.find(x => x.id === d.favToggle);
+    r.fav = !r.fav; r.updated = Date.now(); await saveAll();
+    t.classList.toggle('on', r.fav);
+    t.innerHTML = ic('heart',24,r.fav);
+    t.setAttribute('aria-label', r.fav ? 'Quitar de favoritas' : 'Marcar como favorita');
+    return;
+  }
+  if (d.tag !== undefined){ S.tag = d.tag; S.favOnly = false; return go('list'); }
+  if (d.fav){ S.favOnly = !S.favOnly; S.tag = ''; return go('list'); }
+  if (d.clear){ S.tag=''; S.favOnly=false; S.q=''; return go('list'); }
+
+  if (d.pstep) return applyPortions((S.portions || S.recipes.find(x=>x.id===S.currentId).portions) + (+d.pstep));
+  if (d.preset) return applyPortions(+d.preset);
+
+  if (d.rmi){ t.closest('[data-ing]').remove(); return; }
+  if (d.rms){ t.closest('[data-step]').remove(); return; }
+  if (d.rmp !== undefined){ S.photos[S.draft.id].splice(+d.rmp,1); return renderThumbs(); }
+
+  if (d.del){
+    if (!confirm('¿Eliminar esta receta? No se puede deshacer.')) return;
+    S.recipes = S.recipes.filter(r => r.id !== d.del);
+    await saveAll(); await DB.del('fotos:'+d.del); delete S.photos[d.del];
+    toast('Receta eliminada'); return go('list');
+  }
+
+  if (d.chk){ S.cookDone[d.chk] = !S.cookDone[d.chk]; t.setAttribute('aria-pressed', String(!!S.cookDone[d.chk])); return; }
+
+  if (d.zoom !== undefined){
+    const ps = S.photos[S.currentId] || [];
+    const lb = document.createElement('div');
+    lb.className = 'lightbox'; lb.innerHTML = `<img src="${ps[+d.zoom]}" alt="">`;
+    document.body.appendChild(lb); return;
+  }
+
+  if (d.export){
+    const blob = new Blob([JSON.stringify({recetas:S.recipes, fotos:S.photos}, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'recetario.json'; a.click();
+    URL.revokeObjectURL(a.href); return;
+  }
+  if (d.import){
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'application/json';
+    inp.onchange = async () => {
+      try{
+        const data = JSON.parse(await inp.files[0].text());
+        const incoming = data.recetas || data;
+        if (!Array.isArray(incoming)) throw new Error('formato');
+        const known = new Set(S.recipes.map(r => r.id));
+        S.recipes = [...incoming.filter(r => !known.has(r.id)), ...S.recipes];
+        await saveAll();
+        if (data.fotos) for (const [id,ps] of Object.entries(data.fotos)){ S.photos[id] = ps; await savePhotos(id); }
+        toast('Recetas importadas'); go('list');
+      }catch(err){ toast('El archivo no tiene el formato esperado'); }
+    };
+    inp.click(); return;
+  }
+
+  if (d.demo){
+    newDraft(parseRecipe(`Milanesas a la napolitana
+Para 4 personas, 40 minutos
+
+Ingredientes
+750 g de nalga en milanesas
+3 huevos
+200 g de pan rallado
+2 dientes de ajo
+150 g de queso mozzarella
+200 g de salsa de tomate
+sal y pimienta a gusto
+
+Preparación
+Batir los huevos con el ajo picado, sal y pimienta.
+Pasar cada milanesa por el huevo y después por el pan rallado, apretando bien.
+Freír 3 minutos de cada lado hasta que estén doradas.
+Cubrir con salsa y mozzarella y gratinar 8 minutos en horno fuerte.`));
+    S.draft.tag = 'principal'; S.parsed = true;
+    return go('edit');
+  }
+});
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  const id = btn ? btn.id : '';
+  if (id === 'addIng'){ document.getElementById('ings').insertAdjacentHTML('beforeend', rowIng({id:uid(),qty:null,unit:'',name:''})); return; }
+  if (id === 'addStep'){ document.getElementById('stps').insertAdjacentHTML('beforeend', rowStep({id:uid(),title:'',text:''})); return; }
+  if (id === 'addPic'){ document.getElementById('pics').click(); return; }
+  if (id === 'clearfree'){ document.getElementById('free').value = ''; return; }
+  if (id === 'openTab'){
+    const w = window.open(location.href, '_blank');
+    if (!w) toast('El marco bloqueó la apertura. Copiá la dirección de la página y pegala en una pestaña nueva.');
+    return;
+  }
+  if (id === 'mic'){ toggleMic(); return; }
+  if (id === 'parse'){
+    const txt = document.getElementById('free').value.trim();
+    if (!txt){ toast('Escribí o dictá la receta primero'); return; }
+    newDraft(parseRecipe(txt)); S.parsed = true; go('edit');
+  }
+});
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'q'){
+    S.q = e.target.value;
+    const rs = filtered();
+    document.getElementById('results').innerHTML = resultsHTML(rs);
+    hydrateCards(rs);
+  }
+  if (e.target.id === 'servings'){
+    const n = parseInt(e.target.value, 10);
+    if (!isNaN(n) && n >= 1) applyPortions(n);
+  }
+});
+
+document.addEventListener('change', async e => {
+  if (e.target.id !== 'pics') return;
+  const files = [...e.target.files];
+  if (!files.length) return;
+  toast('Procesando fotos…');
+  for (const f of files){
+    try{ S.photos[S.draft.id].push(await shrink(f)); }catch(err){ toast('No se pudo leer una imagen'); }
+  }
+  e.target.value = ''; renderThumbs();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const lb = document.querySelector('.lightbox');
+  if (lb) lb.remove();
+  if (document.getElementById('cookLayer')) closeCook();
+});
+
+/* ---------- dictado ---------- */
+let rec = null;          // instancia única: recrearla en iOS dispara el sonido del sistema
+let wantMic = false;     // intención del usuario, distinta de si el motor está activo
+
+const ERR_MSG = {
+  'not-allowed':'Falta el permiso de micrófono para esta página. Revisalo en los ajustes del sitio y volvé a intentar.',
+  'service-not-allowed':'Este navegador no puede usar el servicio de reconocimiento. En iPhone, probá con Safari.',
+  'network':'El reconocimiento necesita conexión: el audio se procesa en un servidor.',
+  'audio-capture':'No se encontró un micrófono disponible.',
+  'no-speech':''   // silencio normal entre frases, no es un error para mostrar
+};
+
+function setMicLabel(txt){
+  const btn = document.getElementById('mic');
+  if (btn) btn.querySelector('.t-label').textContent = txt;
+}
+function setMicOn(on){
+  const btn = document.getElementById('mic');
+  if (btn) btn.classList.toggle('rec', on);
+}
+
+function buildRec(){
+  const r = new SR_API();
+  r.lang = (navigator.language && navigator.language.startsWith('es')) ? navigator.language : 'es-ES';
+  // En iOS, continuous = true deja el micrófono abierto y nunca entrega el texto.
+  r.continuous = !IS_IOS;
+  r.interimResults = false;
+
+  r.onstart = () => { S.listening = true; setMicOn(true); setMicLabel('Escuchando… tocá para parar'); };
+
+  r.onresult = ev => {
+    const ta = document.getElementById('free');
+    if (!ta) return;
+    let add = '';
+    for (let i = ev.resultIndex; i < ev.results.length; i++)
+      if (ev.results[i].isFinal) add += ev.results[i][0].transcript.trim() + '\n';
+    if (add){ ta.value = (ta.value ? ta.value.replace(/\s*$/,'\n') : '') + add; ta.scrollTop = ta.scrollHeight; }
+  };
+
+  r.onerror = ev => {
+    if (ev.error === 'no-speech') return;         // onend se encarga de reencender
+    wantMic = false; S.listening = false;
+    setMicOn(false); setMicLabel('Empezar a dictar');
+
+    if (ev.error === 'not-allowed'){
+      if (location.protocol === 'file:') return toast(MIC_MSG['file']);
+      if (IN_FRAME) return toast('La página está dentro de un marco que no habilita el micrófono. Abrila en una pestaña propia.');
+      return toast('Falta el permiso de micrófono para esta página. Revisalo en los ajustes del sitio y volvé a intentar.');
+    }
+    const m = ERR_MSG[ev.error];
+    toast(m || 'El dictado se cortó. Probá de nuevo.');
+  };
+
+  // iOS corta la escucha en cada pausa: si el usuario no apretó parar, se reenciende.
+  r.onend = () => {
+    S.listening = false;
+    if (wantMic && document.getElementById('mic')){
+      setMicLabel('Escuchando… tocá para parar');
+      setTimeout(() => { if (wantMic) { try{ r.start(); }catch(e){} } }, 250);
+      return;
+    }
+    setMicOn(false); setMicLabel('Seguir dictando');
+  };
+  return r;
+}
+
+function toggleMic(){
+  const st = micStatus();
+  if (!st.ok){ toast(MIC_MSG[st.why]); return; }
+
+  if (wantMic){                       // el usuario pide parar
+    wantMic = false;
+    if (rec) try{ rec.stop(); }catch(e){}
+    setMicOn(false); setMicLabel('Seguir dictando');
+    return;
+  }
+
+  if (!rec) rec = buildRec();
+  wantMic = true;
+  try{ rec.start(); }
+  catch(err){
+    // "already started": el motor seguía vivo de una sesión anterior
+    try{ rec.stop(); setTimeout(() => { if (wantMic) rec.start(); }, 300); }
+    catch(e){ wantMic = false; toast('No se pudo iniciar el dictado'); }
+  }
+}
+
+/* ---------- arranque ---------- */
+(async function init(){ await loadAll(); go('list'); })();
+</script>
+</body></html>
